@@ -13,7 +13,7 @@ import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.android.example.cameraxapp.databinding.ActivityMainBinding
+import com.teknorial.myapplication.databinding.ActivityMainBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import android.widget.Toast
@@ -86,7 +86,37 @@ class MainActivity : AppCompatActivity() {
 
    private fun captureVideo() {}
 
-   private fun startCamera() {}
+   private fun startCamera() {
+       val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+       cameraProviderFuture.addListener({
+       // Used to bind the lifecycle of cameras to the lifecycle owner
+       val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
+       // Preview
+       val preview = Preview.Builder()
+          .build()
+          .also {
+              it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
+          }
+
+       // Select back camera as a default
+       val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+       try {
+           // Unbind use cases before rebinding
+           cameraProvider.unbindAll()
+
+           // Bind use cases to camera
+           cameraProvider.bindToLifecycle(
+               this, cameraSelector, preview)
+
+       } catch(exc: Exception) {
+           Log.e(TAG, "Use case binding failed", exc)
+       }
+
+       }, ContextCompat.getMainExecutor(this))
+   }
 
    
 
